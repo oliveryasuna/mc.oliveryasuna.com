@@ -3,8 +3,10 @@ import {defineConfig} from 'vitepress';
 const GTM_ID = 'GTM-T9NRDPPK';
 
 export default defineConfig({
+  lang: 'en-US',
   title: 'Oliver Yasuna',
   description: 'Documentation for Oliver Yasuna\'s Minecraft mods, libraries, and tools.',
+
   cleanUrls: true,
 
   themeConfig: {
@@ -76,5 +78,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       `<body$1>
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=${GTM_ID}"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>`
-    ))
+    )),
+
+  outDir: '../dist'
 });
