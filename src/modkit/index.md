@@ -2,8 +2,8 @@
 title: Modkit
 ---
 
-<img src="/modkit-banner-dark.svg" alt="Modkit" class="modkit-banner light-only">
-<img src="/modkit-banner-light.svg" alt="Modkit" class="modkit-banner dark-only">
+<img src="/modkit-banner-light.png" alt="Modkit" class="modkit-banner light-only">
+<img src="/modkit-banner-dark.png" alt="Modkit" class="modkit-banner dark-only">
 
 # Modkit
 

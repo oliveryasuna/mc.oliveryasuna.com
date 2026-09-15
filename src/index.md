@@ -11,8 +11,9 @@ hero:
 features:
   - title: Modkit
     icon:
-      light: /modkit-light.svg
-      dark: /modkit-dark.svg
+      # src: /modkit.svg
+      light: /modkit-logo-light.svg
+      dark: /modkit-logo-dark.svg
       width: 48
       height: 48
     details: One Gradle DSL for building multi-loader mods from a single codebase. Wraps Loom, ModDevGradle, and Stonecutter so you configure everything once.

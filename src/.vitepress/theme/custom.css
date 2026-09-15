@@ -33,25 +33,6 @@
 }
 
 /*
-  coal.svg fills its canvas edge-to-edge; scale it down to match the ~68% inset
-  baked into the Modkit logo's viewBox. transform scales relative to the image's
-  own rendered size, so it works at any size (88px landing logo, 48px feature
-  icon) while the layout box stays full-size.
-*/
-.coal-logo {
-    transform: scale(0.68);
-}
-
-/* Modkit landing banner. */
-.modkit-banner {
-    display: block;
-    width: 100%;
-    height: auto;
-    border-radius: 12px;
-    margin-bottom: 24px;
-}
-
-/*
   Hero portrait: smaller than the default 192/256/320px and with rounded
   corners. !important beats VitePress's per-breakpoint max-* rules, so one block
   covers every screen size.
@@ -99,4 +80,23 @@ html.dark .light-only {
 
 html:not(.dark) .dark-only {
     display: none;
+}
+
+/*
+  coal.svg fills its canvas edge-to-edge; scale it down to match the ~68% inset
+  baked into the Modkit logo's viewBox. transform scales relative to the image's
+  own rendered size, so it works at any size (88px landing logo, 48px feature
+  icon) while the layout box stays full-size.
+*/
+.coal-logo {
+    transform: scale(0.68);
+}
+
+/* Modkit landing banner. */
+.modkit-banner {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin-bottom: 24px;
 }
