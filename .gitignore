@@ -249,9 +249,12 @@ node_modules/
 # VitePress
 #==================================================
 
-/src/.vitepress/
-!/src/.vitepress/theme/
+/src/.vitepress/*
 !/src/.vitepress/config.ts
+!/src/.vitepress/theme/
+/src/.vitepress/theme/*
+!/src/.vitepress/theme/custom.css
+!/src/.vitepress/theme/index.ts
 
 #==================================================
 # Output
