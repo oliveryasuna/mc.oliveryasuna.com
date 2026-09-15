@@ -1,0 +1,11 @@
+<svg data-dc-tpl="6" viewBox="0 0 100 100" data-om-id="eea71e7a:11" xmlns="http://www.w3.org/2000/svg" width="100" height="100" color="#33363d">
+    <g data-dc-tpl="7" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" data-om-id="eea71e7a:12">
+      <path data-dc-tpl="8" d="M50 16 L84 33 L84 67 L50 84 L16 67 L16 33 Z" data-om-id="eea71e7a:13"/>
+      <path data-dc-tpl="9" d="M50 50 L16 33 M50 50 L84 33 M50 50 L50 84" data-om-id="eea71e7a:14"/>
+      <g data-dc-tpl="11" stroke="none" fill="currentColor" font-family="'Space Grotesk', sans-serif" font-weight="700" data-om-id="eea71e7a:16"><text data-dc-tpl="13" transform="matrix(34,17,0,34,16,33)" x="0.54" y="0.57" font-size="0.52" text-anchor="middle" dominant-baseline="central" fill-opacity="0.28" data-om-id="eea71e7a:18">M</text><text data-dc-tpl="14" transform="matrix(34,17,0,34,16,33)" x="0.5" y="0.5" font-size="0.52" text-anchor="middle" dominant-baseline="central" data-om-id="eea71e7a:19">M</text><text data-dc-tpl="16" transform="matrix(34,-17,0,34,50,50)" x="0.54" y="0.57" font-size="0.52" text-anchor="middle" dominant-baseline="central" fill-opacity="0.28" data-om-id="eea71e7a:21">K</text><text data-dc-tpl="17" transform="matrix(34,-17,0,34,50,50)" x="0.5" y="0.5" font-size="0.52" text-anchor="middle" dominant-baseline="central" data-om-id="eea71e7a:22">K</text></g>
+      
+      <path data-dc-tpl="20" d="M50 20.8 L74.5 33 L50 45.2 L25.5 33 Z" data-om-id="eea71e7a:25"/>
+      <path data-dc-tpl="21" d="M58.2 24.9 L33.7 37.1 M66.3 28.9 L41.8 41.1" data-om-id="eea71e7a:26"/>
+      <path data-dc-tpl="22" d="M41.8 24.9 L66.3 37.1 M33.7 28.9 L58.2 41.1" data-om-id="eea71e7a:27"/>
+    </g>
+  </svg>
