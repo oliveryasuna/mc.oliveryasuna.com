@@ -6,9 +6,34 @@ export default defineConfig({
   cleanUrls: true,
 
   themeConfig: {
-    nav: [],
+    nav: [
+      {
+        text: 'Home',
+        link: '/'
+      },
+      {
+        text: 'Modkit',
+        link: '/modkit/'
+      },
+      {
+        text: 'COAL',
+        link: '/coal/'
+      }
+    ],
 
-    sidebar: {},
+    sidebar: {
+      '/modkit/': [
+        {
+          text: 'Modkit',
+          items: [
+            {
+              text: 'Overview',
+              link: '/modkit/'
+            }
+          ]
+        }
+      ]
+    },
 
     socialLinks: [
       {
