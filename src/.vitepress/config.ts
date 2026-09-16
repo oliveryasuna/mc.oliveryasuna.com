@@ -49,6 +49,10 @@ export default defineConfig({
         link: 'https://github.com/oliveryasuna'
       },
       {
+        icon: 'discord',
+        link: 'https://discord.gg/WzcXYYbcr7'
+      },
+      {
         icon: 'modrinth',
         link: 'https://modrinth.com/user/oliveryasuna'
       },

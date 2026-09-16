@@ -73,6 +73,14 @@
     color: #d9542a;
 }
 
+/* Discord — brand blurple. */
+.VPSocialLink.VPSocialLink:has(.vpi-social-discord) {
+    color: #5865f2;
+}
+.VPSocialLink.VPSocialLink:has(.vpi-social-discord):hover {
+    color: #4752c4;
+}
+
 /* Nav bar logo: rounded corners. */
 .VPNavBarTitle .logo {
     border-radius: 8px;
