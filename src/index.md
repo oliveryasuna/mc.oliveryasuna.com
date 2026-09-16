@@ -1,5 +1,5 @@
 ---
-title: Home | Oliver Yasuna
+title: Home
 
 layout: home
 

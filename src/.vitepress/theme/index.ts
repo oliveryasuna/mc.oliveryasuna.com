@@ -5,6 +5,7 @@ import './custom.css';
 export default ({
   extends: DefaultTheme,
   enhanceApp: (({router}): void => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Intentional.
     if(globalThis.window === undefined) {
       return;
     }
