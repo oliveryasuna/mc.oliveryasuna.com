@@ -1,7 +1,6 @@
 import {defineConfig} from 'vitepress';
 
 const GTM_ID = 'GTM-T9NRDPPK';
-const GA4_MEASUREMENT_ID = 'G-J541Q30CDG';
 
 export default defineConfig({
   lang: 'en-US',
@@ -11,6 +10,8 @@ export default defineConfig({
   cleanUrls: true,
 
   themeConfig: {
+    search: {provider: 'local'},
+
     nav: [
       {
         text: 'Home',
