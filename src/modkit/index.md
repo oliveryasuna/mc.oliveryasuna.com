@@ -14,3 +14,7 @@ You describe your mod once in a `modkit { }` block. Modkit wraps the build tools
 ::: info More docs on the way
 This page is just the introduction. Full guides, configuration reference, and examples are still being written, so check back soon.
 :::
+
+```kotlin
+example code
+```
