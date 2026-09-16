@@ -37,6 +37,14 @@ export default defineConfig({
             {
               text: 'Overview',
               link: '/modkit/'
+            },
+            {
+              text: 'Introduction',
+              link: '/modkit/introduction'
+            },
+            {
+              text: 'Getting started',
+              link: '/modkit/getting-started'
             }
           ]
         }

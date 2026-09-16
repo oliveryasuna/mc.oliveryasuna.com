@@ -254,6 +254,7 @@ node_modules/
 !/src/.vitepress/theme/
 /src/.vitepress/theme/*
 !/src/.vitepress/theme/custom.css
+!/src/.vitepress/theme/gradle-dsl.ts
 !/src/.vitepress/theme/index.ts
 
 #==================================================

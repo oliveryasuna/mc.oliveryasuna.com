@@ -1,4 +1,7 @@
 import {defineConfig} from '@oliveryasuna/eslint-config';
+import packageJson from './package.json' assert {type: 'json'};
+
+const NODE_ENGINE = packageJson.engines.node;
 
 export default defineConfig(
   {
@@ -31,5 +34,19 @@ export default defineConfig(
       }
     }
   },
-  {rules: {'@stylistic/object-property-newline': ['error', {allowAllPropertiesOnSameLine: true}]}}
+  {
+    rules: {
+      '@stylistic/object-property-newline': ['error', {allowAllPropertiesOnSameLine: true}],
+      'n/no-unsupported-features/node-builtins': [
+        'error',
+        {
+          version: NODE_ENGINE,
+          ignores: [
+            'import.meta.dirname',
+            'localStorage'
+          ]
+        }
+      ]
+    }
+  }
 );

@@ -1,5 +1,6 @@
 import type {Theme} from 'vitepress';
 import DefaultTheme from 'vitepress/theme';
+import {gradleDslSync} from './gradle-dsl';
 import './custom.css';
 
 export default ({
@@ -13,8 +14,13 @@ export default ({
     router.onAfterRouteChange = ((to: string): void => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- dataLayer is defined by GTM
       ;(globalThis as any).dataLayer?.push({
-        event: 'page_view', page_path: to
+        event: 'page_view',
+        page_path: to
       });
     });
+
+    // Must run after the GTM assignment above because this wraps the current
+    // `onAfterRouteChange`.
+    gradleDslSync(router);
   })
 } satisfies Theme);
