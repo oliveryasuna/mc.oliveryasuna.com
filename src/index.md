@@ -7,6 +7,13 @@ hero:
   name: Minecraft
   tagline: Documentation for my Minecraft mods and tools.
   image: https://minecraft.wiki/images/Minecraft_social_icon.png
+  actions:
+    # - theme: sponsor
+    - theme: brand
+      text: ♥ Sponsor
+      link: https://github.com/sponsors/oliveryasuna
+      target: _blank
+      rel: noopener
 
 features:
   - title: Modkit
