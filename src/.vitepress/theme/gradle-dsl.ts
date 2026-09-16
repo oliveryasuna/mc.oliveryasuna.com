@@ -31,6 +31,14 @@ let applying = false;
 
 const apply = ((preference: string): void => {
   applying = true;
+
+  // Clicking a <label> focuses its radio input, and focusing an off-screen
+  // input scrolls it into view. On pages with multiple Gradle groups the
+  // synthetic clicks below would jump the viewport, so capture the scroll
+  // position and restore it once we're done. Both happen synchronously before
+  // the next paint, so there's no visible flash.
+  const {scrollX, scrollY} = globalThis;
+
   try {
     for(const group of document.querySelectorAll('.vp-code-group')) {
       if(!isGradleGroup(group)) {
@@ -49,6 +57,7 @@ const apply = ((preference: string): void => {
       }
     }
   } finally {
+    window.scrollTo(scrollX, scrollY);
     applying = false;
   }
 });
