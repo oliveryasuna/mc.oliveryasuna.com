@@ -65,6 +65,102 @@ export default defineConfig({
               link: '/modkit/concepts/multi-version'
             }
           ]
+        },
+        {
+          text: 'Guides',
+          collapsed: false,
+          items: [
+            {
+              text: 'Mod metadata',
+              link: '/modkit/guides/mod-metadata'
+            },
+            {
+              text: 'Mixins',
+              link: '/modkit/guides/mixins'
+            },
+            {
+              text: 'Dependencies',
+              link: '/modkit/guides/dependencies'
+            },
+            {
+              text: 'Run configurations',
+              link: '/modkit/guides/runs'
+            },
+            {
+              text: 'Data generation',
+              link: '/modkit/guides/datagen'
+            },
+            {
+              text: 'Publishing',
+              link: '/modkit/guides/publishing'
+            },
+            {
+              text: 'Continuous integration',
+              link: '/modkit/guides/ci'
+            },
+            {
+              text: 'Testing',
+              link: '/modkit/guides/testing'
+            },
+            {
+              text: 'Multi-version',
+              link: '/modkit/guides/multi-version'
+            }
+          ]
+        },
+        {
+          text: 'Reference',
+          collapsed: false,
+          items: [
+            {
+              text: 'modkit { } (core)',
+              link: '/modkit/reference/core'
+            },
+            {
+              text: 'Loaders',
+              link: '/modkit/reference/loaders'
+            },
+            {
+              text: 'Metadata',
+              link: '/modkit/reference/metadata'
+            },
+            {
+              text: 'Mixins',
+              link: '/modkit/reference/mixins'
+            },
+            {
+              text: 'Dependencies',
+              link: '/modkit/reference/dependencies'
+            },
+            {
+              text: 'Run',
+              link: '/modkit/reference/run'
+            },
+            {
+              text: 'Datagen',
+              link: '/modkit/reference/datagen'
+            },
+            {
+              text: 'Publish',
+              link: '/modkit/reference/publish'
+            },
+            {
+              text: 'CI',
+              link: '/modkit/reference/ci'
+            },
+            {
+              text: 'Testing',
+              link: '/modkit/reference/testing'
+            },
+            {
+              text: 'Multiversion',
+              link: '/modkit/reference/multiversion'
+            },
+            {
+              text: 'Scaffold',
+              link: '/modkit/reference/scaffold'
+            }
+          ]
         }
       ]
     },
