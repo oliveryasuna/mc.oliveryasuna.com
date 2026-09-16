@@ -73,6 +73,11 @@
     color: #d9542a;
 }
 
+/* Nav bar logo: rounded corners. */
+.VPNavBarTitle .logo {
+    border-radius: 8px;
+}
+
 /* Theme-aware images: pair a .light-only and .dark-only element. */
 html.dark .light-only {
     display: none;

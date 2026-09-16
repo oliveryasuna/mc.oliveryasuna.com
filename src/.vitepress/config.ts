@@ -10,6 +10,8 @@ export default defineConfig({
   cleanUrls: true,
 
   themeConfig: {
+    logo: '/me.jpg',
+
     search: {provider: 'local'},
 
     nav: [
