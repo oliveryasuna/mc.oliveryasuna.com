@@ -5,7 +5,7 @@ const GTM_ID = 'GTM-T9NRDPPK';
 export default defineConfig({
   lang: 'en-US',
   title: 'Oliver Yasuna',
-  description: 'Documentation for Oliver Yasuna\'s Minecraft mods, libraries, and tools.',
+  description: 'Documentation for Oliver Yasuna\'s Minecraft mods and tools.',
 
   cleanUrls: true,
 

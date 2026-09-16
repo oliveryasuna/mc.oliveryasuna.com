@@ -5,7 +5,7 @@ layout: home
 
 hero:
   name: Minecraft
-  tagline: Documentation for my Minecraft mods, libraries, and tools.
+  tagline: Documentation for my Minecraft mods and tools.
   image: https://minecraft.wiki/images/Minecraft_social_icon.png
 
 features:
