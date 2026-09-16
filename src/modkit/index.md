@@ -11,6 +11,8 @@ title: Modkit
 
 You describe your mod once in a `modkit { }` block. Modkit wraps the build tools the ecosystem already relies on and drives them for whatever loader and Minecraft version you're targeting. That way you don't have to wire each tool up by hand, and differently for every loader.
 
+Modkit is open-source! Check out the [code](https://github.com/oliveryasuna/modkit).
+
 ## Start here
 
 - [Introduction](./introduction): what Modkit is, the mod-dev pain it removes, and how it stacks up against the alternatives.
