@@ -3,7 +3,8 @@
   "include": [
     "./global.d.ts",
     "./src/**/*.ts",
-    "./src/.vitepress/**/*.ts"
+    "./src/.vitepress/**/*.ts",
+    "./src/.vitepress/theme/**/*.vue"
   ],
   "compilerOptions": {
     //==================================================

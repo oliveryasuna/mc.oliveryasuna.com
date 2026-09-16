@@ -256,6 +256,7 @@ node_modules/
 !/src/.vitepress/theme/custom.css
 !/src/.vitepress/theme/gradle-dsl.ts
 !/src/.vitepress/theme/index.ts
+!/src/.vitepress/theme/PreReleaseNotice.vue
 
 #==================================================
 # Output

@@ -47,6 +47,24 @@ export default defineConfig({
               link: '/modkit/getting-started'
             }
           ]
+        },
+        {
+          text: 'Concepts',
+          collapsed: false,
+          items: [
+            {
+              text: 'The Modkit model',
+              link: '/modkit/concepts/the-model'
+            },
+            {
+              text: 'The plugin suite',
+              link: '/modkit/concepts/the-plugin-suite'
+            },
+            {
+              text: 'Multi-version builds',
+              link: '/modkit/concepts/multi-version'
+            }
+          ]
         }
       ]
     },
