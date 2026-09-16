@@ -173,7 +173,7 @@ public class MyMod implements ModInitializer {
 Gradle provisions the right JDK, Loom downloads Minecraft, [Metadata](./reference/metadata) writes `fabric.mod.json`, and you get a loadable jar in `build/libs/`.
 
 ::: tip There's an easier way
-If you don't want want to have to build and manually copy the jar to your Minecraft instance, check out the [Run](./guides/run) guide.
+If you don't want want to have to build and manually copy the jar to your Minecraft instance, check out the [Run configurations](./guides/runs) guide.
 :::
 
 ## Building for NeoForge
