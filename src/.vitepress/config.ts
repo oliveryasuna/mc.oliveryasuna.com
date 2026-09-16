@@ -9,6 +9,8 @@ export default defineConfig({
 
   cleanUrls: true,
 
+  // markdown: {lineNumbers: true},
+
   themeConfig: {
     logo: '/me.jpg',
 

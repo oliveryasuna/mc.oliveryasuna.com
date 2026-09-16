@@ -185,14 +185,14 @@ The same source and the same `build.gradle.kts` build for NeoForge. Declare the 
 ```groovy [Groovy]
 minecraft('1.21.11') {
     loaders.add(ModLoader.FABRIC)
-    loaders.add(ModLoader.NEOFORGE)
+    loaders.add(ModLoader.NEOFORGE) // [!code focus]
 }
 ```
 
 ```kotlin [Kotlin]
 minecraft("1.21.11") {
     loaders.add(ModLoader.FABRIC)
-    loaders.add(ModLoader.NEOFORGE)
+    loaders.add(ModLoader.NEOFORGE) // [!code focus]
 }
 ```
 
