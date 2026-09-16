@@ -8,10 +8,10 @@
   "scripts": {
     "build": "vitepress build ./src",
     "dev": "vitepress dev ./src",
+    "lint": "eslint .",
     "postinstall": "syncpack format",
     "prepare": "husky",
-    "preview": "vitepress preview ./src",
-    "lint": "eslint ."
+    "preview": "vitepress preview ./src"
   },
   "devDependencies": {
     "@oliveryasuna/eslint-config": "2.2.2",
@@ -24,6 +24,7 @@
     "knip": "6.32.2",
     "lint-staged": "17.1.0",
     "nx": "23.2.1",
+    "railway": "3.11.0",
     "secretlint": "13.0.2",
     "syncpack": "15.3.2",
     "tsdown": "0.22.14",
