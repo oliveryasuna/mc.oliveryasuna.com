@@ -27,6 +27,7 @@ features:
       height: 48
       class: coal-logo
     details: SLF4J-style abstraction layer for Minecraft mod configuration. Consumer mods depend on coal-api; pluggable providers implement the SPI.
-    link: /coal/
-    linkText: Docs
+        Working on docs rewrite; please check back soon.
+    # link: /coal/
+    # linkText: Docs
 ---
