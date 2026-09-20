@@ -159,39 +159,117 @@ const shake = ((): void => {
 
 let audioCtx: (AudioContext | null) = null;
 
-// Half a second of white noise that decays to silence; the source for the boom.
-const createNoiseBuffer = ((ctx: AudioContext): AudioBuffer => {
-  const frames = Math.floor(ctx.sampleRate * 0.5);
+// Flat white noise of a given length; the source for every explosion layer.
+const createNoise = ((
+  ctx: AudioContext,
+  seconds: number
+): AudioBuffer => {
+  const frames = Math.floor(ctx.sampleRate * seconds);
   const buffer = ctx.createBuffer(1, frames, ctx.sampleRate);
   const data = buffer.getChannelData(0);
 
   for(let i = 0; i < frames; i++) {
-    data[i] = (((Math.random() * 2) - 1) * (1 - (i / frames)));
+    data[i] = ((Math.random() * 2) - 1);
   }
 
   return buffer;
 });
 
-// White noise through a downward lowpass sweep with a fast-decaying gain,
-// which reads as a punchy boom.
-const playBoom = ((ctx: AudioContext): void => {
-  const t0 = ctx.currentTime;
+// A soft-clip curve. Driving the boom layers through it saturates the peaks,
+// which glues the mix together and adds grit.
+const makeSaturator = ((ctx: AudioContext): WaveShaperNode => {
+  const shaper = ctx.createWaveShaper();
+  const curve = (new Float32Array(256));
 
+  for(let i = 0; i < 256; i++) {
+    const x = (((i / 255) * 2) - 1);
+    curve[i] = Math.tanh(x * 2.2);
+  }
+
+  shaper.curve = curve;
+
+  return shaper;
+});
+
+// The chest-thump: a sine dropping from a low pitch down to a sub rumble, with
+// a sharp attack and a long tail. This is most of what makes the boom good.
+const boomSub = ((
+  ctx: AudioContext,
+  t0: number,
+  dest: AudioNode
+): void => {
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(170, t0);
+  osc.frequency.exponentialRampToValueAtTime(40, (t0 + 0.35));
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.exponentialRampToValueAtTime(1, (t0 + 0.015));
+  gain.gain.exponentialRampToValueAtTime(0.0001, (t0 + 0.75));
+
+  osc.connect(gain).connect(dest);
+  osc.start(t0);
+  osc.stop(t0 + 0.75);
+});
+
+// The rumble body: noise swept from bright down to dark, decaying over ~0.9s.
+const boomBody = ((
+  ctx: AudioContext,
+  t0: number,
+  dest: AudioNode
+): void => {
   const noise = ctx.createBufferSource();
-  noise.buffer = createNoiseBuffer(ctx);
+  noise.buffer = createNoise(ctx, 0.9);
 
   const lowpass = ctx.createBiquadFilter();
   lowpass.type = 'lowpass';
-  lowpass.frequency.setValueAtTime(900, t0);
-  lowpass.frequency.exponentialRampToValueAtTime(120, (t0 + 0.4));
+  lowpass.frequency.setValueAtTime(1600, t0);
+  lowpass.frequency.exponentialRampToValueAtTime(80, (t0 + 1.5));
 
   const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0.35, t0);
-  gain.gain.exponentialRampToValueAtTime(0.001, (t0 + 0.5));
+  gain.gain.setValueAtTime(0.55, t0);
+  gain.gain.exponentialRampToValueAtTime(0.001, (t0 + 1.9));
 
-  noise.connect(lowpass).connect(gain).connect(ctx.destination);
+  noise.connect(lowpass).connect(gain).connect(dest);
   noise.start(t0);
-  noise.stop(t0 + 0.5);
+  noise.stop(t0 + 0.9);
+});
+
+// The initial crack: a very short high-passed noise burst for the punch.
+const boomCrack = ((
+  ctx: AudioContext,
+  t0: number,
+  dest: AudioNode
+): void => {
+  const noise = ctx.createBufferSource();
+  noise.buffer = createNoise(ctx, 0.09);
+
+  const highpass = ctx.createBiquadFilter();
+  highpass.type = 'highpass';
+  highpass.frequency.value = 900;
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.7, t0);
+  gain.gain.exponentialRampToValueAtTime(0.001, (t0 + 0.09));
+
+  noise.connect(highpass).connect(gain).connect(dest);
+  noise.start(t0);
+  noise.stop(t0 + 0.09);
+});
+
+// Layer the crack, body, and sub through the saturator into a master gain.
+const playBoom = ((ctx: AudioContext): void => {
+  const t0 = ctx.currentTime;
+
+  const saturator = makeSaturator(ctx);
+  const master = ctx.createGain();
+  master.gain.value = 0.7;
+  saturator.connect(master).connect(ctx.destination);
+
+  boomCrack(ctx, t0, saturator);
+  boomBody(ctx, t0, saturator);
+  boomSub(ctx, t0, saturator);
 });
 
 const boom = ((): void => {
@@ -207,22 +285,6 @@ const boom = ((): void => {
   }
 });
 
-// Flat, sustained white noise; the source for the fuse hiss.
-const createHissBuffer = ((
-  ctx: AudioContext,
-  seconds: number
-): AudioBuffer => {
-  const frames = Math.floor(ctx.sampleRate * seconds);
-  const buffer = ctx.createBuffer(1, frames, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-
-  for(let i = 0; i < frames; i++) {
-    data[i] = ((Math.random() * 2) - 1);
-  }
-
-  return buffer;
-});
-
 // A single high-passed hiss: quick attack, holds steady, then fades to silence.
 // It doesn't swell into the blast; the creeper hisses once at the start.
 const playHiss = ((ctx: AudioContext): void => {
@@ -230,7 +292,7 @@ const playHiss = ((ctx: AudioContext): void => {
   const t0 = ctx.currentTime;
 
   const noise = ctx.createBufferSource();
-  noise.buffer = createHissBuffer(ctx, seconds);
+  noise.buffer = createNoise(ctx, seconds);
 
   const highpass = ctx.createBiquadFilter();
   highpass.type = 'highpass';
