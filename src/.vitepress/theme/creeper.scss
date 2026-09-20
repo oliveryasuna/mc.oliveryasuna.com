@@ -3,7 +3,7 @@
 $z-vignette: 2147483000;
 $z-shield:   2147483040;
 $z-grid:     2147483050;
-$z-bedrock:  2147483080;
+$z-crater:   2147483080;
 $z-cube:     2147483100;
 $z-flash:    2147483200;
 $z-badge:    2147483300;
@@ -64,6 +64,17 @@ body.creeper-armed {
     background: var(--vp-c-bg);
 }
 
+// Ground blocks (dirt and stone thrown up by the blast) carry a texture.
+.creeper-cube-dirt {
+    background-image: url(/dirt.svg);
+    background-size: 100% 100%;
+}
+
+.creeper-cube-stone {
+    background-image: url(/stone.svg);
+    background-size: 100% 100%;
+}
+
 // Interaction shield: a transparent layer above the page (but below the blast
 // visuals and badge) that captures pointer input while armed, so the page can't
 // be hovered, dragged, selected, or clicked; you can only blast it.
@@ -83,17 +94,22 @@ body.creeper-armed {
     pointer-events: none;
 }
 
-// Bedrock left in the crater where content was destroyed. Tiles abut exactly,
-// so no border; the texture alone should read as one continuous bedrock surface
-// rather than a grid of separated blocks.
+// Crater tiles: the exposed layer covering a cratered cell (dirt, then stone,
+// then bedrock as it digs deeper). Opaque, so they hide the webpage underneath,
+// and they abut exactly so no border is needed.
+.creeper-dirt,
+.creeper-stone,
 .creeper-bedrock {
     position: absolute;
-    z-index: $z-bedrock;
+    z-index: $z-crater;
     pointer-events: none;
-    background-image: url(/bedrock.svg);
     background-size: 100% 100%;
     image-rendering: pixelated;
 }
+
+.creeper-dirt { background-image: url(/dirt.svg); }
+.creeper-stone { background-image: url(/stone.svg); }
+.creeper-bedrock { background-image: url(/bedrock.svg); }
 
 // The creeper fuse: a creeper materializes in the clicked square, swells, and a
 // white overlay blinks faster as it charges, then detonates. --fuse (duration)

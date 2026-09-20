@@ -8,7 +8,7 @@ import './creeper.scss';
 const DEBUG_GRID = false;
 
 const CELL_PX = 30;            // Grid size
-const BLAST_RADIUS = 149;      // px
+const BLAST_RADIUS = 120;      // px
 const BIG_AREA = (500 * 500);  // px^2; larger elements blast as color, not cloned content
 const GRAVITY = 2600;          // px/s^2
 const MIN_SPEED = 260;         // px/s, radial launch speed
@@ -18,6 +18,15 @@ const LIFE_MS = 1400;          // How long a cube lives before it's culled
 const FUSE_MS = 1600;          // Creeper's blinking fuse before it detonates
 const HISS_MS = 700;           // One hiss at the start, then silence until the boom
 const CULL_MARGIN = 200;       // px below the viewport before a cube is retired
+
+// Chance to break through each layer, scaled by blast power (1 at the source
+// cell, falling to 0 at the rim). The webpage multiplier is high, so the
+// surface breaks across most of the disc and only survives near the rim; dirt
+// and stone fall off faster, so the deeper layers concentrate toward the
+// source, which almost (but not quite) always reaches bedrock.
+const BREAK_WEBPAGE = 3.5;
+const BREAK_DIRT = 1.5;
+const BREAK_STONE = 0.95;
 
 // Last-resort block color, only used if even the page root has no background.
 const FALLBACK_COLOR = '#8f8f8f';
@@ -255,20 +264,22 @@ const hiss = ((): void => {
 // Detonation
 //==================================================
 
-// Every square we have carved out of each element, kept across all blasts until
-// the user defuses. Overlapping blasts have to add to this rather than replace
-// it, or the earlier blast's damage would heal. Keyed by "left,top" so the same
-// square can't get recorded twice (the evenodd mask would cancel it).
-const holesByEl = (new Map<HTMLElement, Map<string, Cell>>());
+// How deep each cell has been dug: 1 = dirt exposed, 2 = stone, 3 = bedrock.
+// Cells not in the map are untouched webpage. Kept across blasts so an
+// overlapping one only ever digs deeper, and cleared on defuse. Keyed by
+// "docLeft,docTop".
+const cellDepth = (new Map<string, number>());
 
-// Each carved element's mask from before we touched it, stored once, so defuse
-// restores it exactly (usually to no mask at all).
-const priorMask = (new Map<HTMLElement, {mask: string; webkitMask: string;}>());
+// The tile currently shown for each cratered cell, so a later blast can swap
+// its texture when it digs deeper, and defuse can remove it.
+const layerTiles = (new Map<string, HTMLElement>());
 
-// Bedrock tiles left behind in the crater to mark the destruction, plus the
-// document-space cells already covered (deduped). Both cleared on defuse.
-const bedrockTiles: HTMLElement[] = [];
-const bedrockCells = (new Set<string>());
+// Tile texture class per exposed layer.
+const LAYER_CLASS: Record<number, string> = {
+  1: 'creeper-dirt',
+  2: 'creeper-stone',
+  3: 'creeper-bedrock'
+};
 
 // A transparent full-viewport layer that eats pointer input while armed, so the
 // page underneath can't be hovered, selected, or clicked; you can only blast
@@ -305,25 +316,16 @@ const launchVelocity = ((
   };
 });
 
-// A grid square, in viewport coordinates.
-interface Cell {
-  left: number;
-  top: number;
-}
-
-// One in-flight blast: its center, spawn time, and the fragment cubes accrue
-// into. `carved` tracks which elements this blast has already fully cleared, so
-// we compute each element's disc of holes once, not once per sampled cell.
-// Carved squares themselves are tracked globally in holesByEl, not per blast.
+// One in-flight blast: its center, spawn time, and the fragment its cubes go
+// into. `layers` is the per-cell outcome (which layer each cratered cell ends
+// up showing), collected while sampling and applied only at detonation, so
+// nothing shows during the fuse.
 interface Blast {
   x: number;
   y: number;
   now: number;
   fragment: DocumentFragment;
-  carved: Set<HTMLElement>;
-  // Cells to crater into bedrock; collected during sampling but laid down only
-  // at detonation, so the scar doesn't appear during the fuse.
-  bedrock: Cell[];
+  layers: {docLeft: number; docTop: number; depth: number;}[];
 }
 
 // Give one finished cube its launch physics and stage it in the fragment.
@@ -448,110 +450,112 @@ const elementAt = ((
   return el;
 });
 
-// Record a square to punch out of `el`, accumulating (and deduping) across
-// blasts. The first time we touch an element we also stash its original mask
-// for restore.
-const recordHole = ((
-  el: HTMLElement,
-  cell: Cell
-): void => {
-  let cells = holesByEl.get(el);
-  if(!cells) {
-    cells = (new Map<string, Cell>());
-    holesByEl.set(el, cells);
-    priorMask.set(
-      el,
-      {
-        mask: el.style.maskImage,
-        webkitMask: el.style.getPropertyValue('-webkit-mask-image')
-      }
-    );
+// How many layers a cell loses, given its distance from the source. Power falls
+// off linearly to the rim; each layer down is its own roll, so the source
+// usually reaches bedrock while the rim usually survives.
+const digDepth = ((dist: number): number => {
+  const power = Math.max(0, (1 - (dist / BLAST_RADIUS)));
+
+  let depth = 0;
+  if(Math.random() < (power * BREAK_WEBPAGE)) {
+    depth = 1;
+  }
+  if((depth === 1) && (Math.random() < (power * BREAK_DIRT))) {
+    depth = 2;
+  }
+  if((depth === 2) && (Math.random() < (power * BREAK_STONE))) {
+    depth = 3;
   }
 
-  cells.set(`${cell.left},${cell.top}`, cell);
+  return depth;
 });
 
-// Carve the whole blast disc out of `el`, once per blast: every grid square
-// that overlaps the element's box and whose center is within the radius. Going
-// by box overlap rather than by what elementFromPoint sampled means edge cells
-// that straddle the element's border still carve it, so no remnant strips
-// survive.
-const carveElement = ((
-  el: HTMLElement,
+// A flying block of a ground layer (dirt or stone), textured by class.
+const createTextureCube = ((
+  left: number,
+  top: number,
+  className: string,
   blast: Blast
 ): void => {
-  if(blast.carved.has(el)) {
-    return;
-  }
-  blast.carved.add(el);
+  const cube = document.createElement('div');
+  cube.className = `creeper-cube ${className}`;
+  cube.style.width = `${CELL_PX}px`;
+  cube.style.height = `${CELL_PX}px`;
 
-  const rect = el.getBoundingClientRect();
-  const startX = (Math.floor(Math.max(rect.left, (blast.x - BLAST_RADIUS)) / CELL_PX) * CELL_PX);
-  const startY = (Math.floor(Math.max(rect.top, (blast.y - BLAST_RADIUS)) / CELL_PX) * CELL_PX);
-  const endX = Math.min(rect.right, (blast.x + BLAST_RADIUS));
-  const endY = Math.min(rect.bottom, (blast.y + BLAST_RADIUS));
-
-  for(let y = startY; y < endY; y += CELL_PX) {
-    for(let x = startX; x < endX; x += CELL_PX) {
-      if(Math.hypot(((x + (CELL_PX / 2)) - blast.x), ((y + (CELL_PX / 2)) - blast.y)) <= BLAST_RADIUS) {
-        recordHole(
-          el,
-          {
-            left: x,
-            top: y
-          }
-        );
-      }
-    }
-  }
+  launchCube(cube, left, top, blast);
 });
 
-// Leave a bedrock tile in the crater, so the scar reads as "dug down to
-// bedrock". Positioned in document space (so it scrolls with the page) and
-// deduped. Returns false if this cell was already cratered by an earlier blast.
-const placeBedrock = ((
-  cellX: number,
-  cellY: number
-): boolean => {
-  const docLeft = (cellX + globalThis.scrollX);
-  const docTop = (cellY + globalThis.scrollY);
-  const key = `${docLeft},${docTop}`;
-  if(bedrockCells.has(key)) {
-    return false;
-  }
-  bedrockCells.add(key);
-
-  const tile = document.createElement('div');
-  tile.className = 'creeper-bedrock';
-  tile.style.left = `${docLeft}px`;
-  tile.style.top = `${docTop}px`;
-  tile.style.width = `${CELL_PX}px`;
-  tile.style.height = `${CELL_PX}px`;
-  document.body.append(tile);
-  bedrockTiles.push(tile);
-
-  return true;
-});
-
-// Spawn the block for a covered cell (real content, or a color block for big
-// containers) and note the square to carve out of the original.
-const spawnCubeFor = ((
-  el: HTMLElement,
-  rect: DOMRect,
+// Throw the webpage block for a cell: its real content, or a color block for a
+// big container. Blank space has nothing to throw.
+const removeWebpage = ((
   cellX: number,
   cellY: number,
+  cx: number,
+  cy: number,
   blast: Blast
 ): void => {
+  const el = elementAt(cx, cy);
+  if(!el) {
+    return;
+  }
+
+  const rect = el.getBoundingClientRect();
   if((rect.width * rect.height) > BIG_AREA) {
     createColorCube(cellX, cellY, resolveBaseColor(el), blast);
   } else {
     createContentCube(cellX, cellY, el, rect, blast);
   }
-  carveElement(el, blast);
 });
 
-// One grid cell inside the blast circle: crater it, and if it covers something,
-// spawn the matching block for it.
+// Throw a block for every layer this cell loses, from its current depth down to
+// the new one.
+const digCell = ((
+  cellX: number,
+  cellY: number,
+  cx: number,
+  cy: number,
+  from: number,
+  to: number,
+  blast: Blast
+): void => {
+  if((from < 1) && (to >= 1)) {
+    removeWebpage(cellX, cellY, cx, cy, blast);
+  }
+  if((from < 2) && (to >= 2)) {
+    createTextureCube(cellX, cellY, 'creeper-cube-dirt', blast);
+  }
+  if((from < 3) && (to >= 3)) {
+    createTextureCube(cellX, cellY, 'creeper-cube-stone', blast);
+  }
+});
+
+// Show the exposed layer for a cratered cell. Creates the tile the first time,
+// or just swaps its texture when a later blast digs deeper. Positioned in
+// document space so it scrolls with the page.
+const placeTile = ((
+  docLeft: number,
+  docTop: number,
+  depth: number
+): void => {
+  const key = `${docLeft},${docTop}`;
+
+  let tile = layerTiles.get(key);
+  if(!tile) {
+    tile = document.createElement('div');
+    tile.style.left = `${docLeft}px`;
+    tile.style.top = `${docTop}px`;
+    tile.style.width = `${CELL_PX}px`;
+    tile.style.height = `${CELL_PX}px`;
+    document.body.append(tile);
+    layerTiles.set(key, tile);
+  }
+
+  tile.className = (LAYER_CLASS[depth] ?? 'creeper-bedrock');
+  cellDepth.set(key, depth);
+});
+
+// One grid cell inside the blast circle. Roll how deep it digs, throw a block
+// for every layer it loses, and remember the exposed layer for detonation.
 const blastCell = ((
   cellX: number,
   cellY: number,
@@ -559,30 +563,29 @@ const blastCell = ((
 ): void => {
   const cx = (cellX + (CELL_PX / 2));
   const cy = (cellY + (CELL_PX / 2));
-  if(Math.hypot((cx - blast.x), (cy - blast.y)) > BLAST_RADIUS) {
+  const dist = Math.hypot((cx - blast.x), (cy - blast.y));
+  if(dist > BLAST_RADIUS) {
     return;
   }
 
-  // A cell an earlier blast already cratered is bedrock now, and bedrock does
-  // not break, so it throws no particles and keeps its tile.
-  const key = `${cellX + globalThis.scrollX},${cellY + globalThis.scrollY}`;
-  if(bedrockCells.has(key)) {
+  const docLeft = (cellX + globalThis.scrollX);
+  const docTop = (cellY + globalThis.scrollY);
+  const current = (cellDepth.get(`${docLeft},${docTop}`) ?? 0);
+  if(current >= 3) {
     return;
   }
 
-  // The whole blast disc craters (even empty space), but the tile is laid down
-  // at detonation, not now, so it doesn't show during the fuse.
-  blast.bedrock.push({
-    left: cellX,
-    top: cellY
+  const target = digDepth(dist);
+  if(target <= current) {
+    return;
+  }
+
+  digCell(cellX, cellY, cx, cy, current, target, blast);
+  blast.layers.push({
+    docLeft: docLeft,
+    docTop: docTop,
+    depth: target
   });
-
-  const el = elementAt(cx, cy);
-  if(!el) {
-    return;
-  }
-
-  spawnCubeFor(el, el.getBoundingClientRect(), cellX, cellY, blast);
 });
 
 // Treat the viewport as a fixed grid aligned to its origin, and blast every
@@ -601,43 +604,16 @@ const buildBlastCubes = ((blast: Blast): void => {
   }
 });
 
-// Punch the recorded grid squares out of an element with an SVG evenodd mask:
-// one outer rect (opaque = keep) with the hole squares subtracted (transparent
-// = gone). The hole is the union of blocks, so the crater is blocky too.
-const applyMask = ((
-  el: HTMLElement,
-  cells: Cell[]
-): void => {
-  const rect = el.getBoundingClientRect();
-  const w = Math.ceil(rect.width);
-  const h = Math.ceil(rect.height);
-  const squares = cells
-    .map(cell => ` M${Math.round(cell.left - rect.left)} ${Math.round(cell.top - rect.top)} h${CELL_PX} v${CELL_PX} h${-CELL_PX} Z`)
-    .join('');
-  const svg = (`<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'>`
-    + `<path fill-rule='evenodd' fill='#fff' d='M0 0 H${w} V${h} H0 Z${squares}'/></svg>`);
-  const url = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-
-  el.style.setProperty('mask', `${url} no-repeat top left / 100% 100%`);
-  el.style.setProperty('-webkit-mask', `${url} no-repeat top left / 100% 100%`);
-});
-
-// Fired once the pre-blast flash has swelled: re-carve every wounded element
-// from its full accumulated hole set (so overlapping blasts add up rather than
-// heal each other), release the cubes, and kick the feedback.
+// Fired once the fuse finishes: lay the exposed layer tiles (now, not during
+// the fuse), release the cubes, and kick the feedback.
 const detonate = ((
   flash: HTMLElement,
   blast: Blast
 ): void => {
   flash.remove();
 
-  for(const [el, cells] of holesByEl) {
-    applyMask(el, [...cells.values()]);
-  }
-
-  // Lay the bedrock scar now, not during the fuse.
-  for(const cell of blast.bedrock) {
-    placeBedrock(cell.left, cell.top);
+  for(const layer of blast.layers) {
+    placeTile(layer.docLeft, layer.docTop, layer.depth);
   }
 
   document.body.append(blast.fragment);
@@ -681,8 +657,7 @@ const detonateAt = ((
     y: ((Math.floor(clientY / CELL_PX) * CELL_PX) + (CELL_PX / 2)),
     now: performance.now(),
     fragment: document.createDocumentFragment(),
-    carved: (new Set<HTMLElement>()),
-    bedrock: []
+    layers: []
   };
 
   // The shield is on top and eats pointer input; make it transparent to
@@ -709,23 +684,13 @@ const heroImage = ((target: (EventTarget | null)): boolean => {
   return (target.closest('.VPHero .image, .VPHero .image-src') !== null);
 });
 
-// Undo every scar: restore each element's original mask (usually none) and
-// remove the bedrock tiles.
+// Remove every crater tile and forget the depths, so the page is whole again.
 const clearScars = ((): void => {
-  for(const [el, prior] of priorMask) {
-    el.style.removeProperty('mask');
-    el.style.removeProperty('-webkit-mask');
-    el.style.maskImage = prior.mask;
-    el.style.setProperty('-webkit-mask-image', prior.webkitMask);
-  }
-  priorMask.clear();
-  holesByEl.clear();
-
-  for(const tile of bedrockTiles) {
+  for(const tile of layerTiles.values()) {
     tile.remove();
   }
-  bedrockTiles.length = 0;
-  bedrockCells.clear();
+  layerTiles.clear();
+  cellDepth.clear();
 });
 
 const disarm = ((): void => {
