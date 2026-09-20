@@ -1,0 +1,204 @@
+// z-index stack, low -> high. The values are near INT_MAX so creeper visuals
+// always sit above the page; naming the layers keeps their order legible.
+$z-vignette: 2147483000;
+$z-shield:   2147483040;
+$z-grid:     2147483050;
+$z-bedrock:  2147483080;
+$z-cube:     2147483100;
+$z-flash:    2147483200;
+$z-badge:    2147483300;
+
+$creeper-green: #5b9a3e;
+
+// Hint that the hero portrait does something.
+.VPHero .image-src {
+    /* cursor: pointer; */
+}
+
+// Armed state.
+body.creeper-armed {
+    // No text selection.
+    user-select: none;
+
+    // Crosshair.
+    &,
+    & * {
+        cursor: url(/creeper.svg) 16 16, crosshair !important;
+    }
+
+    // Vignette.
+    &::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: $z-vignette;
+        pointer-events: none;
+        box-shadow: inset 0 0 160px 20px rgba(60, 160, 40, 0.35);
+    }
+}
+
+// Flying block.
+.creeper-cube {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: $z-cube;
+    pointer-events: none;
+    overflow: hidden;
+    will-change: transform, opacity;
+    image-rendering: pixelated;
+    // A hairline edge delineates the grid so debris reads as broken blocks.
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.28);
+
+    // Solid-color blocks (big background areas) get the beveled 3D-cube look.
+    &:not(.creeper-cube-content) {
+        box-shadow:
+            inset 3px 3px 0 rgba(255, 255, 255, 0.28),
+            inset -4px -4px 0 rgba(0, 0, 0, 0.32),
+            inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+    }
+}
+
+// Content blocks carry a clone of the real element, clipped to the cell.
+.creeper-cube-content {
+    background: var(--vp-c-bg);
+}
+
+// Interaction shield: a transparent layer above the page (but below the blast
+// visuals and badge) that captures pointer input while armed, so the page can't
+// be hovered, dragged, selected, or clicked; you can only blast it.
+.creeper-shield {
+    position: fixed;
+    inset: 0;
+    z-index: $z-shield;
+    pointer-events: auto;
+    user-select: none;
+}
+
+// Debug: overlay of the CELL_PX grid blasts snap to. Toggle with creeperGrid().
+.creeper-grid {
+    position: fixed;
+    inset: 0;
+    z-index: $z-grid;
+    pointer-events: none;
+}
+
+// Bedrock left in the crater where content was destroyed. Tiles abut exactly,
+// so no border; the texture alone should read as one continuous bedrock surface
+// rather than a grid of separated blocks.
+.creeper-bedrock {
+    position: absolute;
+    z-index: $z-bedrock;
+    pointer-events: none;
+    background-image: url(/bedrock.svg);
+    background-size: 100% 100%;
+    image-rendering: pixelated;
+}
+
+// The creeper fuse: a creeper materializes in the clicked square, swells, and a
+// white overlay blinks faster as it charges, then detonates. --fuse (duration)
+// is set inline so both animations track FUSE_MS.
+.creeper-flash {
+    position: fixed;
+    z-index: $z-flash;
+    pointer-events: none;
+    background-image: url(/creeper.svg);
+    background-size: 100% 100%;
+    image-rendering: pixelated;
+    transform-origin: center;
+    animation: creeper-swell var(--fuse, 1600ms) linear forwards;
+
+    // The white flash overlay on the creeper's face.
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        box-shadow: 0 0 20px 6px rgba(255, 255, 255, 0.7);
+        opacity: 0;
+        animation: creeper-blink var(--fuse, 1600ms) linear forwards;
+    }
+}
+
+// The creeper swells as its fuse burns down.
+@keyframes creeper-swell {
+    from { transform: scale(1); }
+    to   { transform: scale(2.6); }
+}
+
+// White-flash blinks that accelerate, ending fully lit right before the blast.
+@keyframes creeper-blink {
+    0%   { opacity: 0; }
+    8%   { opacity: 0.85; }
+    16%  { opacity: 0; }
+    30%  { opacity: 0.9; }
+    40%  { opacity: 0; }
+    54%  { opacity: 0.92; }
+    63%  { opacity: 0; }
+    76%  { opacity: 0.95; }
+    84%  { opacity: 0.05; }
+    93%  { opacity: 1; }
+    100% { opacity: 1; }
+}
+
+// Whole-page shake on detonation.
+@keyframes creeper-shake {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-6px, 4px); }
+    40% { transform: translate(5px, -5px); }
+    60% { transform: translate(-4px, -3px); }
+    80% { transform: translate(3px, 5px); }
+}
+
+body.creeper-shake {
+    animation: creeper-shake 320ms ease-in-out;
+}
+
+// "Press Esc to defuse" badge.
+.creeper-badge {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: $z-badge;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(20, 30, 16, 0.92);
+    color: #d6f5c8;
+    font-size: 13px;
+    line-height: 1.2;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4), inset 0 0 0 2px $creeper-green;
+    user-select: none;
+    cursor: pointer;
+
+    img {
+        display: block;
+        image-rendering: pixelated;
+        border-radius: 3px;
+    }
+
+    strong {
+        color: #fff;
+    }
+}
+
+// For reduced-motion users: no shake, and the creeper sits still (no swell, no
+// blink) until it detonates.
+@media (prefers-reduced-motion: reduce) {
+    body.creeper-shake {
+        animation: none;
+    }
+
+    .creeper-flash {
+        &,
+        &::after {
+            animation: none !important;
+        }
+
+        &::after {
+            opacity: 0;
+        }
+    }
+}

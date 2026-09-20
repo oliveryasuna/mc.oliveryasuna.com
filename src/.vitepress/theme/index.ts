@@ -2,6 +2,7 @@ import type {Theme} from 'vitepress';
 import DefaultTheme from 'vitepress/theme';
 import {h} from 'vue';
 import './custom.css';
+import {initCreeperMode} from './creeper';
 import {gradleDslSync} from './gradle-dsl';
 import PreReleaseNotice from './PreReleaseNotice.vue';
 
@@ -28,5 +29,7 @@ export default ({
     // Must run after the GTM assignment above because this wraps the current
     // `onAfterRouteChange`.
     gradleDslSync(router);
+
+    initCreeperMode(router);
   })
 } satisfies Theme);

@@ -26,6 +26,7 @@
     "lint-staged": "17.1.0",
     "nx": "23.2.1",
     "railway": "3.11.0",
+    "sass": "1.104.1",
     "secretlint": "13.0.2",
     "syncpack": "15.3.2",
     "tsdown": "0.22.14",

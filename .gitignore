@@ -253,6 +253,8 @@ node_modules/
 !/src/.vitepress/config.ts
 !/src/.vitepress/theme/
 /src/.vitepress/theme/*
+!/src/.vitepress/theme/creeper.scss
+!/src/.vitepress/theme/creeper.ts
 !/src/.vitepress/theme/custom.css
 !/src/.vitepress/theme/gradle-dsl.ts
 !/src/.vitepress/theme/index.ts
