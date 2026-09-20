@@ -666,6 +666,44 @@ const buildBlastCubes = ((blast: Blast): void => {
   }
 });
 
+// Directional inner shadows (light from the top): the top wall is deepest in
+// shadow, the sides less so, and the near (bottom) wall catches a faint
+// highlight. Together they make a cell read as sunk below its higher neighbors.
+const SHADOW_TOP = 'inset 0 11px 9px -6px rgba(0, 0, 0, 0.72)';
+const SHADOW_LEFT = 'inset 10px 0 8px -6px rgba(0, 0, 0, 0.5)';
+const SHADOW_RIGHT = 'inset -10px 0 8px -6px rgba(0, 0, 0, 0.5)';
+const SHADOW_BOTTOM = 'inset 0 -7px 7px -5px rgba(255, 255, 255, 0.14)';
+
+// An edge is shadowed when the neighbor across it sits higher (a shallower
+// depth, or intact webpage at depth 0), since that higher wall casts into this
+// cell. This shades both the crater rim and every dirt/stone/bedrock step.
+const edgeShadow = ((
+  depth: number,
+  nx: number,
+  ny: number,
+  shadow: string
+): string => (((cellDepth.get(`${nx},${ny}`) ?? 0) < depth) ? shadow : ''));
+
+// Re-shade every crater tile from its four neighbors. Recomputed after each
+// blast, since new tiles change which edges border something higher.
+const updateEdgeShadows = ((): void => {
+  for(const [key, tile] of layerTiles) {
+    const parts = key.split(',');
+    const dl = Number(parts[0]);
+    const dt = Number(parts[1]);
+    const depth = (cellDepth.get(key) ?? 0);
+
+    const shadows = ([
+      edgeShadow(depth, dl, (dt - CELL_PX), SHADOW_TOP),
+      edgeShadow(depth, dl, (dt + CELL_PX), SHADOW_BOTTOM),
+      edgeShadow(depth, (dl - CELL_PX), dt, SHADOW_LEFT),
+      edgeShadow(depth, (dl + CELL_PX), dt, SHADOW_RIGHT)
+    ].filter(Boolean));
+
+    tile.style.boxShadow = shadows.join(', ');
+  }
+});
+
 // Fired once the fuse finishes: lay the exposed layer tiles (now, not during
 // the fuse), release the cubes, and kick the feedback.
 const detonate = ((
@@ -677,6 +715,7 @@ const detonate = ((
   for(const layer of blast.layers) {
     placeTile(layer.docLeft, layer.docTop, layer.depth);
   }
+  updateEdgeShadows();
 
   document.body.append(blast.fragment);
   ensureLoop();
