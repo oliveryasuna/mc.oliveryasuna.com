@@ -24,11 +24,11 @@ export default defineConfig({
       {
         text: 'Modkit',
         link: '/modkit/'
-      },
-      {
-        text: 'COAL',
-        link: '/coal/'
       }
+      // {
+      //   text: 'COAL',
+      //   link: '/coal/'
+      // }
     ],
 
     sidebar: {
