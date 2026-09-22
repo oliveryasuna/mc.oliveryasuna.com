@@ -1,3 +1,5 @@
+@use 'sass:list';
+
 /* Show the footer on pages that have a sidebar (default theme hides it). */
 .VPFooter.VPFooter.has-sidebar {
     display: block !important;
@@ -13,23 +15,23 @@
     grid-template-columns: auto 1fr;
     column-gap: 16px;
     align-items: start;
-}
 
-.VPFeature .box:has(> .VPImage) > .VPImage {
-    grid-column: 1;
-    grid-row: 1;
-    margin-bottom: 0;
-}
+    > .VPImage {
+        grid-column: 1;
+        grid-row: 1;
+        margin-bottom: 0;
+    }
 
-.VPFeature .box:has(> .VPImage) > .title,
-.VPFeature .box:has(> .VPImage) > .details,
-.VPFeature .box:has(> .VPImage) > .link-text {
-    grid-column: 2;
-}
+    > .title,
+    > .details,
+    > .link-text {
+        grid-column: 2;
+    }
 
-/* Center the title against the taller icon. */
-.VPFeature .box:has(> .VPImage) > .title {
-    align-self: center;
+    /* Center the title against the taller icon. */
+    > .title {
+        align-self: center;
+    }
 }
 
 /*
@@ -47,38 +49,25 @@
   Social link icons (nav bar + mobile menu), colored per link. Each icon is a
   <span class="vpi-social-*">, so :has() selects its link. Color drives the icon
   fill; the doubled class out-specifies VitePress's scoped .VPSocialLink rule.
+
+  GitHub is monochrome and tracks the theme's primary text color; the rest use
+  their brand colors.
 */
+$social-links: (
+    'github': (var(--vp-c-text-2), var(--vp-c-text-1)),
+    'modrinth': (#1bd96a, #17b959),
+    'curseforge': (#f16436, #d9542a),
+    'discord': (#5865f2, #4752c4),
+);
 
-/* GitHub — monochrome mark; track the theme's primary text color. */
-.VPSocialLink.VPSocialLink:has(.vpi-social-github) {
-    color: var(--vp-c-text-2);
-}
-.VPSocialLink.VPSocialLink:has(.vpi-social-github):hover {
-    color: var(--vp-c-text-1);
-}
+@each $name, $colors in $social-links {
+    .VPSocialLink.VPSocialLink:has(.vpi-social-#{$name}) {
+        color: list.nth($colors, 1);
 
-/* Modrinth — brand green. */
-.VPSocialLink.VPSocialLink:has(.vpi-social-modrinth) {
-    color: #1bd96a;
-}
-.VPSocialLink.VPSocialLink:has(.vpi-social-modrinth):hover {
-    color: #17b959;
-}
-
-/* CurseForge — brand orange. */
-.VPSocialLink.VPSocialLink:has(.vpi-social-curseforge) {
-    color: #f16436;
-}
-.VPSocialLink.VPSocialLink:has(.vpi-social-curseforge):hover {
-    color: #d9542a;
-}
-
-/* Discord — brand blurple. */
-.VPSocialLink.VPSocialLink:has(.vpi-social-discord) {
-    color: #5865f2;
-}
-.VPSocialLink.VPSocialLink:has(.vpi-social-discord):hover {
-    color: #4752c4;
+        &:hover {
+            color: list.nth($colors, 2);
+        }
+    }
 }
 
 /* Nav bar logo: rounded corners. */

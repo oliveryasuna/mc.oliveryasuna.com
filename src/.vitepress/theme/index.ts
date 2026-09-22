@@ -1,7 +1,7 @@
 import type {Theme} from 'vitepress';
 import DefaultTheme from 'vitepress/theme';
 import {h} from 'vue';
-import './custom.css';
+import './custom.scss';
 import {initCreeperMode} from './creeper';
 import {gradleDslSync} from './gradle-dsl';
 import PreReleaseNotice from './PreReleaseNotice.vue';

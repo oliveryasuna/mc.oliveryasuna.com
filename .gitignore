@@ -255,7 +255,7 @@ node_modules/
 /src/.vitepress/theme/*
 !/src/.vitepress/theme/creeper.scss
 !/src/.vitepress/theme/creeper.ts
-!/src/.vitepress/theme/custom.css
+!/src/.vitepress/theme/custom.scss
 !/src/.vitepress/theme/gradle-dsl.ts
 !/src/.vitepress/theme/index.ts
 !/src/.vitepress/theme/PreReleaseNotice.vue
